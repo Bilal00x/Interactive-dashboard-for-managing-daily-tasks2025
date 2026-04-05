@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>لوحة تحكم المهام اليومية | إدارة المهام التفاعلية</title>
+    <!-- Font Awesome 6 (icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: Cairo (Arabic friendly) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background: #f4f7fc;
+            padding: 1.5rem;
+            min-height: 100vh;
+        }
+
+        /* main container */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            color: #1e2a3e;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .header h1 i {
+            background: none;
+            color: #2a5298;
+            font-size: 2rem;
+        }
+        .reset-btn {
+            background: #eef2f5;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #2c3e66;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .reset-btn:hover {
+            background: #e0e7ed;
+            transform: scale(0.97);
+        }
+
+        /* stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 28px;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        .stat-info h3 {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #5a6874;
+            letter-spacing: 0.3px;
+        }
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1e2f41;
+            margin-top: 0.2rem;
+        }
+        .stat-icon {
+            font-size: 2.6rem;
+            opacity: 0.7;
+            color: #2a5298;
+        }
+        .stat-card.completed .stat-icon { color: #2e7d32; }
+        .stat-card.pending .stat-icon { color: #ed6c02; }
+
+        /* add task form */
+        .add-task-card {
+            background: white;
+            border-radius: 28px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02), 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #eef2f5;
+        }
+        .form-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1e2a3e;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .task-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+        .form-group {
+            flex: 1 1 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #5f6c7a;
+            letter-spacing: 0.3px;
+        }
+        .form-group input, .form-group select {
+            padding: 0.75rem 1rem;
+            border-radius: 20px;
+            border: 1.5px solid #e2e8f0;
+            background: #fefefe;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            outline: none;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: #2a5298;
+            box-shadow: 0 0 0 2px rgba(42,82,152,0.2);
+        }
+        .add-btn {
+            background: linear-gradient(100deg, #1e3c72, #2a5298);
+            border: none;
+            padding: 0.75rem 1.6rem;
+            border-radius: 40px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .add-btn:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(100deg, #142b4b, #1f3f6e);
+        }
+
+        /* filter bar */
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+        .filter-group {
+            background: white;
+            padding: 0.3rem;
+            border-radius: 60px;
+            display: inline-flex;
+            gap: 0.2rem;
+            border: 1px solid #e0e7ed;
+        }
+        .filter-btn {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1.4rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #4a5b6e;
+            font-size: 0.85rem;
+        }
+        .filter-btn.active {
+            background: #2a5298;
+            color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .delete-completed {
+            background: #fff0f0;
+            border: 1px solid #ffcdd2;
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            color: #c62828;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.85rem;
+        }
+        .delete-completed:hover {
+            background: #ffe0e0;
+        }
+
+        /* tasks list */
+        .tasks-container {
+            background: white;
+            border-radius: 28px;
+            padding: 1.2rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+            border: 1px solid #edf2f7;
+            min-height: 400px;
+        }
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0.8rem;
+            border-bottom: 2px solid #eef2f5;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            color: #4b5f73;
+            font-size: 0.85rem;
+        }
+        .task-item {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 1rem 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            transition: all 0.2s;
+            border: 1px solid #eef2f9;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .task-item:hover {
+            background: #fafcff;
+            border-color: #dce5ef;
+            transform: translateX(-2px);
+        }
+        .task-info {
+            flex: 3;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .task-check {
+            transform: scale(1.2);
+            accent-color: #2a5298;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+        .task-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e2f41;
+            word-break: break-word;
+            min-width: 150px;
+        }
+        .task-completed .task-name {
+            text-decoration: line-through;
+            opacity: 0.65;
+        }
+        .priority-badge {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.25rem 0.7rem;
+            border-radius: 50px;
+            background: #f1f3f5;
+            display: inline-block;
+        }
+        .priority-high { background: #ffe6e5; color: #c62828; }
+        .priority-medium { background: #fff0db; color: #ef6c00; }
+        .priority-low { background: #e3f2e9; color: #2e7d32; }
+        .due-date {
+            font-size: 0.75rem;
+            background: #f4f9fe;
+            padding: 0.25rem 0.8rem;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #336699;
+        }
+        .overdue {
+            background: #ffebee;
+            color: #b71c1c;
+        }
+        .task-actions {
+            display: flex;
+            gap: 0.6rem;
+        }
+        .task-actions button {
+            background: transparent;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0.4rem;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            color: #5f7d9c;
+        }
+        .task-actions button:hover {
+            background: #eef2fa;
+            color: #1e3c72;
+        }
+        .delete-task:hover {
+            color: #d32f2f !important;
+        }
+        .empty-tasks {
+            text-align: center;
+            padding: 3rem;
+            color: #8b9eb0;
+            font-weight: 500;
+        }
+
+        /* modal for edit */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(3px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-card {
+            background: white;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 480px;
+            padding: 2rem;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.2);
+        }
+        .modal-card h3 {
+            margin-bottom: 1.2rem;
+            font-weight: 800;
+        }
+        .modal-card input, .modal-card select {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border-radius: 28px;
+            border: 1px solid #cfdfed;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        .modal-buttons button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .save-edit {
+            background: #2a5298;
+            color: white;
+        }
+        .cancel-edit {
+            background: #eef2f5;
+        }
+
+        @media (max-width: 680px) {
+            body { padding: 1rem; }
+            .task-info { flex-direction: column; align-items: flex-start; width: 100%; }
+            .task-actions { align-self: flex-end; }
+            .task-form { flex-direction: column; align-items: stretch; }
+            .add-btn { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- header -->
+    <div class="header">
+        <h1><i class="fas fa-tasks"></i> لوحة تحكم المهام اليومية</h1>
+        <button class="reset-btn" id="resetAllTasksBtn"><i class="fas fa-trash-alt"></i> إعادة تعيين (حذف الكل)</button>
+    </div>
+
+    <!-- stats cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3>📋 إجمالي المهام</h3>
+                <div class="stat-number" id="totalTasksCount">0</div>
+            </div>
+            <i class="fas fa-list-check stat-icon"></i>
+        </div>
+        <div class="stat-card completed">
+            <div class="stat-info">
+                <h3>✅ المهام المكتملة</h3>
+                <div class="stat-number" id="completedTasksCount">0</div>
+            </div>
+            <i class="fas fa-check-circle stat-icon"></i>
+        </div>
+        <div class="stat-card pending">
+            <div class="stat-info">
+                <h3>⏳ المهام المعلقة</h3>
+                <div class="stat-number" id="pendingTasksCount">0</div>
+            </div>
+            <i class="fas fa-clock stat-icon"></i>
+        </div>
+    </div>
+
+    <!-- add task form -->
+    <div class="add-task-card">
+        <div class="form-title"><i class="fas fa-plus-circle"></i> إضافة مهمة جديدة</div>
+        <div class="task-form">
+            <div class="form-group">
+                <label>📌 اسم المهمة</label>
+                <input type="text" id="taskNameInput" placeholder="مثال: مراجعة التقرير" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>⚡ الأولوية</label>
+                <select id="taskPriority">
+                    <option value="high">عالية</option>
+                    <option value="medium" selected>متوسطة</option>
+                    <option value="low">منخفضة</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📅 تاريخ الاستحقاق</label>
+                <input type="date" id="taskDueDate">
+            </div>
+            <button class="add-btn" id="addTaskBtn"><i class="fas fa-save"></i> أضف المهمة</button>
+        </div>
+    </div>
+
+    <!-- filter & actions -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <button data-filter="all" class="filter-btn active">الكل</button>
+            <button data-filter="pending" class="filter-btn">المعلقة</button>
+            <button data-filter="completed" class="filter-btn">المكتملة</button>
+        </div>
+        <button class="delete-completed" id="clearCompletedBtn"><i class="fas fa-eraser"></i> حذف المكتملة</button>
+    </div>
+
+    <!-- tasks list container -->
+    <div class="tasks-container">
+        <div class="tasks-header">
+            <span>المهمة</span>
+            <span>الإجراءات</span>
+        </div>
+        <div id="tasksList" class="tasks-list">
+            <!-- dynamic tasks injected -->
+            <div class="empty-tasks">✨ لا توجد مهام، أضف مهمة جديدة! ✨</div>
+        </div>
+    </div>
+</div>
+
+<!-- edit modal -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3><i class="fas fa-pen"></i> تعديل المهمة</h3>
+        <input type="text" id="editTaskName" placeholder="اسم المهمة">
+        <select id="editTaskPriority">
+            <option value="high">عالية</option>
+            <option value="medium">متوسطة</option>
+            <option value="low">منخفضة</option>
+        </select>
+        <input type="date" id="editTaskDueDate">
+        <div class="modal-buttons">
+            <button class="cancel-edit" id="closeModalBtn">إلغاء</button>
+            <button class="save-edit" id="saveEditBtn">حفظ التغييرات</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- STORAGE & DATA ----------
+    let tasks = [];
+    let currentFilter = "all";   // all, pending, completed
+    let editingTaskId = null;
+
+    // DOM elements
+    const tasksListEl = document.getElementById("tasksList");
+    const totalTasksSpan = document.getElementById("totalTasksCount");
+    const completedTasksSpan = document.getElementById("completedTasksCount");
+    const pendingTasksSpan = document.getElementById("pendingTasksCount");
+    const addBtn = document.getElementById("addTaskBtn");
+    const taskNameInput = document.getElementById("taskNameInput");
+    const taskPrioritySelect = document.getElementById("taskPriority");
+    const taskDueDateInput = document.getElementById("taskDueDate");
+    const resetAllBtn = document.getElementById("resetAllTasksBtn");
+    const clearCompletedBtn = document.getElementById("clearCompletedBtn");
+    const filterBtns = document.querySelectorAll(".filter-btn");
+    const modalOverlay = document.getElementById("editModal");
+    const editTaskName = document.getElementById("editTaskName");
+    const editTaskPriority = document.getElementById("editTaskPriority");
+    const editTaskDueDate = document.getElementById("editTaskDueDate");
+    const saveEditBtn = document.getElementById("saveEditBtn");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+
+    // helpers
+    function formatDueDate(dateString) {
+        if (!dateString) return "بدون تاريخ";
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        return date.toLocaleDateString("ar-EG", { year: 'numeric', month: 'numeric', day: 'numeric' });
+    }
+
+    function isOverdue(dueDateStr, completed) {
+        if (completed) return false;
+        if (!dueDateStr) return false;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dueDate = new Date(dueDateStr);
+        dueDate.setHours(0, 0, 0, 0);
+        return dueDate < today;
+    }
+
+    function getPriorityClass(priority) {
+        if (priority === "high") return "priority-high";
+        if (priority === "medium") return "priority-medium";
+        return "priority-low";
+    }
+
+    function getPriorityText(priority) {
+        if (priority === "high") return "عالية";
+        if (priority === "medium") return "متوسطة";
+        return "منخفضة";
+    }
+
+    // save to local storage
+    function saveToLocalStorage() {
+        localStorage.setItem("dailyTasksApp", JSON.stringify(tasks));
+    }
+
+    // load initial data
+    function loadInitialTasks() {
+        const stored = localStorage.getItem("dailyTasksApp");
+        if (stored) {
+            tasks = JSON.parse(stored);
+        } else {
+            // demo tasks
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+            tasks = [
+                { id: Date.now() + 1, text: "مراجعة تقرير الأداء الأسبوعي", priority: "high", dueDate: today, completed: false },
+                { id: Date.now() + 2, text: "اجتماع الفريق الساعة 2 ظهراً", priority: "medium", dueDate: tomorrow, completed: false },
+                { id: Date.now() + 3, text: "إرسال البريد الإلكتروني للعملاء", priority: "low", dueDate: yesterday, completed: false },
+                { id: Date.now() + 4, text: "تحديث وثائق المشروع", priority: "medium", dueDate: tomorrow, completed: true },
+            ];
+        }
+    }
+
+    // update stats (total, completed, pending)
+    function updateStats() {
+        const total = tasks.length;
+        const completed = tasks.filter(t => t.completed === true).length;
+        const pending = total - completed;
+        totalTasksSpan.innerText = total;
+        completedTasksSpan.innerText = completed;
+        pendingTasksSpan.innerText = pending;
+    }
+
+    // render tasks based on current filter
+    function renderTasks() {
+        let filteredTasks = [...tasks];
+        if (currentFilter === "completed") {
+            filteredTasks = filteredTasks.filter(t => t.completed === true);
+        } else if (currentFilter === "pending") {
+            filteredTasks = filteredTasks.filter(t => t.completed === false);
+        }
+        // sort by due date (closest first) but keep pending intuitive
+        filteredTasks.sort((a,b) => {
+            if (!a.dueDate && !b.dueDate) return 0;
+            if (!a.dueDate) return 1;
+            if (!b.dueDate) return -1;
+            return new Date(a.dueDate) - new Date(b.dueDate);
+        });
+
+        if (filteredTasks.length === 0) {
+            tasksListEl.innerHTML = `<div class="empty-tasks"><i class="far fa-smile-wink"></i> لا توجد مهام في هذا القسم 🧘</div>`;
+            updateStats();
+            return;
+        }
+
+        let html = "";
+        filteredTasks.forEach(task => {
+            const isTaskCompleted = task.completed;
+            const overdueFlag = isOverdue(task.dueDate, task.completed);
+            const dueDisplay = task.dueDate ? formatDueDate(task.dueDate) : "بدون تاريخ";
+            const priorityClass = getPriorityClass(task.priority);
+            const priorityText = getPriorityText(task.priority);
+            const completedClass = isTaskCompleted ? "task-completed" : "";
+            const overdueClass = overdueFlag ? "overdue" : "";
+            
+            html += `
+                <div class="task-item" data-task-id="${task.id}">
+                    <div class="task-info">
+                        <input type="checkbox" class="task-check" ${isTaskCompleted ? "checked" : ""} data-id="${task.id}">
+                        <span class="task-name ${completedClass}">${escapeHtml(task.text)}</span>
+                        <span class="priority-badge ${priorityClass}">${priorityText}</span>
+                        <span class="due-date ${overdueClass}"><i class="far fa-calendar-alt"></i> ${dueDisplay} ${overdueFlag ? '⚠️ متأخرة' : ''}</span>
+                    </div>
+                    <div class="task-actions">
+                        <button class="edit-task" data-id="${task.id}" title="تعديل"><i class="fas fa-edit"></i></button>
+                        <button class="delete-task" data-id="${task.id}" title="حذف"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        tasksListEl.innerHTML = html;
+        updateStats();
+    }
+
+    // helper escape
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // add new task
+    function addTask() {
+        let text = taskNameInput.value.trim();
+        if (text === "") {
+            alert("يرجى إدخال اسم المهمة!");
+            return;
+        }
+        const priority = taskPrioritySelect.value;
+        let dueDate = taskDueDateInput.value;
+        if (dueDate === "") dueDate = null;
+        const newTask = {
+            id: Date.now(),
+            text: text,
+            priority: priority,
+            dueDate: dueDate,
+            completed: false,
+        };
+        tasks.unshift(newTask); // newest at top (but render will sort by date anyway)
+        taskNameInput.value = "";
+        taskDueDateInput.value = "";
+        taskPrioritySelect.value = "medium";
+        saveToLocalStorage();
+        renderTasks();
+    }
+
+    // toggle complete
+    function toggleComplete(taskId) {
+        const task = tasks.find(t => t.id == taskId);
+        if (task) {
+            task.completed = !task.completed;
+            saveToLocalStorage();
+            renderTasks();
+        }
+    }
+
+    // delete task
+    function deleteTask(taskId) {
+        if (confirm("هل أنت متأكد من حذف هذه المهمة؟")) {
+            tasks = tasks.filter(t => t.id != taskId);
+            saveToLocalStorage();
+            renderTasks();
+        }
+    }
+
+    // edit modal logic
+    function openEditModal(taskId) {
+        const task = tasks.find(t => t.id == taskId);
+        if (!task) return;
+        editingTaskId = taskId;
+        editTaskName.value = task.text;
+        editTaskPriority.value = task.priority;
+        editTaskDueDate.value = task.dueDate || "";
+        modalOverlay.classList.add("active");
+    }
+
+    function closeModal() {
+        modalOverlay.classList.remove("active");
+        editingTaskId = null;
+    }
+
+    function saveEdit() {
+        if (!editingTaskId) return;
+        const newText = editTaskName.value.trim();
+        if (newText === "") {
+            alert("اسم المهمة لا يمكن أن يكون فارغاً!");
+            return;
+        }
+        const taskIndex = tasks.findIndex(t => t.id == editingTaskId);
+        if (taskIndex !== -1) {
+            tasks[taskIndex].text = newText;
+            tasks[taskIndex].priority = editTaskPriority.value;
+            tasks[taskIndex].dueDate = editTaskDueDate.value || null;
+            saveToLocalStorage();
+            renderTasks();
+        }
+        closeModal();
+    }
+
+    // clear all completed tasks
+    function clearCompletedTasks() {
+        if (tasks.filter(t => t.completed).length === 0) {
+            alert("لا توجد مهام مكتملة لحذفها");
+            return;
+        }
+        if (confirm("سيتم حذف جميع المهام المكتملة نهائياً. هل أنت متأكد؟")) {
+            tasks = tasks.filter(t => !t.completed);
+            saveToLocalStorage();
+            renderTasks();
+        }
+    }
+
+    // reset all tasks (delete everything)
+    function resetAllTasks() {
+        if (tasks.length === 0) return;
+        if (confirm("⚠️ تحذير: سيتم حذف جميع المهام بشكل نهائي. هل تريد المتابعة؟")) {
+            tasks = [];
+            saveToLocalStorage();
+            renderTasks();
+        }
+    }
+
+    // filter change
+    function setFilter(filterValue) {
+        currentFilter = filterValue;
+        filterBtns.forEach(btn => {
+            if (btn.getAttribute("data-filter") === filterValue) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+        });
+        renderTasks();
+    }
+
+    // event delegation for dynamic task buttons
+    function handleTaskActions(e) {
+        const target = e.target;
+        // checkbox
+        if (target.classList.contains("task-check")) {
+            const id = target.getAttribute("data-id");
+            if (id) toggleComplete(id);
+        }
+        // edit button
+        if (target.closest(".edit-task")) {
+            const btn = target.closest(".edit-task");
+            const id = btn.getAttribute("data-id");
+            if (id) openEditModal(id);
+        }
+        // delete button
+        if (target.closest(".delete-task")) {
+            const btn = target.closest(".delete-task");
+            const id = btn.getAttribute("data-id");
+            if (id) deleteTask(id);
+        }
+    }
+
+    // event listeners
+    addBtn.addEventListener("click", addTask);
+    resetAllBtn.addEventListener("click", resetAllTasks);
+    clearCompletedBtn.addEventListener("click", clearCompletedTasks);
+    tasksListEl.addEventListener("click", handleTaskActions);
+    saveEditBtn.addEventListener("click", saveEdit);
+    closeModalBtn.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", (e) => {
+        if (e.target === modalOverlay) closeModal();
+    });
+    filterBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const filterValue = btn.getAttribute("data-filter");
+            setFilter(filterValue);
+        });
+    });
+    // set default date for new task: today
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (taskDueDateInput) taskDueDateInput.value = todayStr;
+
+    // initial load
+    loadInitialTasks();
+    saveToLocalStorage(); // ensure demo stored
+    renderTasks();
+    // set default filter to all
+    setFilter("all");
+</script>
+</body>
+</html>
